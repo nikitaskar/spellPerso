@@ -5,15 +5,194 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Personnalisation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+    <style>
+        body {
+            position: relative;
+        }
+      .customizeContainer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+      h1 {
+          color: #2145e4;
+      }
+      .contentWrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-right: 20px;
+      }
+
+
+      .categoriesContainer {
+        display: flex;
+      }
+      
+      .categories button {
+        display: block;
+      }
+      
+      .armorChoice {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        background-color:  rgba(254,204,168, 0.5);
+        width: 70px;
+        border-radius: 50px;
+        margin-left: 10px;
+      }
+
+      .categories {
+        width: 70px;
+        background-color: rgba(255,255,255, 0.5);
+        /* opacity: 0.5; */
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        margin-left: 30px;
+        border-radius: 50px;
+      }
+      
+      .categoryItem {
+        margin: 15px 0;
+        width: 60px;
+        height: 60px;
+        background: rgb(255, 255, 255);
+        border-radius: 50%;
+        padding: 10px;
+        border: none;
+        opacity: 1;
+        transition: background 300ms;
+      }
+
+      .armorItem {
+        margin: 15px 0;
+        width: 60px;
+        height: 60px;
+        background: transparent;
+        border-radius: 50%;
+        padding: 10px;
+        border: none;
+        transition: background 300ms, opacity 300ms;
+      }
+
+      .armorItem:hover {
+        background:white;
+        transition: background 300ms, opacity 300ms;
+      }
+      .categoryItem:hover {
+        background:#fecca8;
+        opacity: 1;
+        transition: background 300ms, opacity 300ms;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      #name {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid black;
+        color: black;
+        text-align: center;
+        font-size: 18px;
+        width: 200px;
+      } 
+
+      #name::placeholder {
+        color: black;
+        text-align: center;
+        font-size: 18px;
+      }
+
+      #name:focus, button:focus {
+        outline: 0;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .title {
+        margin-bottom: 20px;
+        font-size: 18px;
+        background: transparent;
+        border: 0;
+      }
+      
+      .title:focus {
+       outline: 0;
+      }
+      
+      .validate {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        padding: 10px;
+        background: #455ee1;
+        color: white;
+        font-size: 18px;
+        border: 0;
+        width: 200px;
+        transform: translateX(-50%)
+      }
+
+      .validate:hover {
+        cursor: pointer;
+      }
+      
+      </style>
 </head>
 <body>  
-    <div id="changeHead">
-        Tête change
-    </div>
-    <div id="createChar">
-        FInish
-    </div>
+   
+  
+    <div class="customizeContainer">
+            <div id="changeHead" >
+                    Tête change
+                </div>
+        <h1>Personnalise ton héro !</h1>
+        <div class="contentWrapper">
+            <div class="left">
+                <div class="categoriesContainer">
+                  <div class="categories">
+                    <button class="categoryItem" id="casque">Casque</button>
+                    <button class="categoryItem" id="tete">Tete</button>
+                    <button class="categoryItem" id="corps">Corps</button>
+                    <button class="categoryItem" id="bras">Bras</button>
+                    <button class="categoryItem" id="jambe">Jambe</button>
+                    <button class="categoryItem" id="arme">arme</button>
+                  </div>
+                  <div class="armorChoice">
+                    <button class="armorItem" id="1">
+                      Num 1
+                    </button>
+                  </div>
+                </div>
+            </div>
+            <div class="right">
+              <form action="">
+                  <select name="slct" id="slct" class="title">
+                    <option>Titre de ton héro</option>
+                    <option value="1">Chevalier</option>
+                    <option value="2">Chevaleresse</option>
+                    <option value="3">Prince</option>
+                    <option value="4">Princesse</option>
+                  </select>
+                  <input type="text" id="name" placeholder="Nom de ton héro">
+              </form>
+             
+            </div>
+        </div>
+        <button class="validate" id="validate">
+          C'est parti
+        </button>
+      </div>
     <script src="bundle.js"></script>
 </body>
 </html>

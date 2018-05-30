@@ -1,46 +1,71 @@
 import loadingManager from '../utils/loadingManager'
 import * as THREE from 'three'
+import charOrga from '../assets/charOrga'
+import colors from '../assets/colors'
 
 class customizeChar {
     constructor() {
         this.loadingManager = new loadingManager()
         this.mesh = new THREE.Group()
-        this.fileNames = [
-            "testCuisseGauche",
-            "testCuisseDroite",
-            "testMolletGauche",
-            "testPiedGauche",
-            "testMolletDroit",
-            "testPiedDroit",
-            "testBrasDroit",
-            "testMainDroite",
-            "testCasque",
-            "testTete",
-            "testBrasGauche",
-            "testMainGauche",
-            "testBody",
-        ]
-        this.paths = []
+        // this.fileNames = [
+        //     "testCuisseGauche",
+        //     "testCuisseDroit",
+        //     "testMolletGauche",
+        //     "testPiedGauche",
+        //     "testMolletDroit",
+        //     "testPiedDroit",
+        //     "testBrasDroit",
+        //     "testMainDroit",
+        //     "testCasque",
+        //     "testTete",
+        //     "testBrasGauche",
+        //     "testMainGauche",
+        //     "testBody",
+        // ]
+        this.bodyParts = []
+        this.paths = []        
+        this.colorId = []
+        this.type = []
 
-        for (let i = 0; i < this.fileNames.length; i++) {
-            this.paths.push("src/assets/chars/"+this.fileNames[i]+".json")
-            
+        for(let key in charOrga) {
+            this.bodyParts.push(key)
+            for(let i=0; i< charOrga[key][0].object.length; i++) {
+                let path = charOrga[key][0].object[i].path
+                let colorId =  charOrga[key][0].object[i].colorId
+                if(key == "jambe" || key == "bras") {
+                    this.colorId.push(colorId,colorId)
+                    this.type.push(key, key)
+                    this.paths.push(path+"Droit.json", path+"Gauche.json")
+
+                } else {
+                    this.type.push(key)
+                    this.colorId.push(colorId)
+                    this.paths.push(path+".json")
+                }
+
+                if(key == "jambe" && i+1 == charOrga[key][0].object.length) {
+                    console.log('ok')
+                }
+            }
+           
         }
+        // console.log(this.paths)
+        // for (let i = 0; i < this.fileNames.length; i++) {
+        //     this.paths.push("src/assets/chars/"+this.fileNames[i]+".json")    
+        // }
     }
 
     loadCharacter() {
-        return this.loadingManager.loadObject(this.paths)
+        return this.loadingManager.loadObject(this.paths, this.colorId, this.type)
     }
 
     createMeshGroup(geometries) {
         return new Promise(resolve => {
             for (let i = 0; i < geometries.length; i++) {
-                    let color  = new THREE.Color()
-                    color.setHex(Math.random() * 0xffffff)
-                    let mat = new THREE.MeshBasicMaterial({color: color})
+                    let mat = new THREE.MeshBasicMaterial({color: colors[1][geometries[i].colorId]})
                     mat.skinning = true
                     let mesh = new THREE.SkinnedMesh(geometries[i], mat)
-                    mesh.name = this.fileNames[i]
+                   
                     this.mesh.add(mesh)  
                 
                 
@@ -54,11 +79,13 @@ class customizeChar {
     createCharacter(character) {
         
         return new Promise(resolve => {
-            this.character = character.children[0]
+            this.character = character.children[0].clone()
    
             for (let i = 1; i < character.children.length; i++) {
        
-                let bodyPart = character.children[i]
+                let bodyPart = character.children[i].clone()
+                
+                bodyPart.updateMatrix();
                 this.character.geometry.merge(bodyPart.geometry, bodyPart.matrix, i)
                 
                 for (let j = 0; j < bodyPart.geometry.skinIndices.length; j++) {

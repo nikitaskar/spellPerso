@@ -7,21 +7,7 @@ class customizeChar {
     constructor() {
         this.loadingManager = new loadingManager()
         this.mesh = new THREE.Group()
-        // this.fileNames = [
-        //     "testCuisseGauche",
-        //     "testCuisseDroit",
-        //     "testMolletGauche",
-        //     "testPiedGauche",
-        //     "testMolletDroit",
-        //     "testPiedDroit",
-        //     "testBrasDroit",
-        //     "testMainDroit",
-        //     "testCasque",
-        //     "testTete",
-        //     "testBrasGauche",
-        //     "testMainGauche",
-        //     "testBody",
-        // ]
+
         this.bodyParts = []
         this.paths = []        
         this.colorId = []
@@ -59,17 +45,27 @@ class customizeChar {
         return this.loadingManager.loadObject(this.paths, this.colorId, this.type)
     }
 
-    createMeshGroup(geometries) {
+    createMeshGroup(object) {
+        console.log(object[0])
         return new Promise(resolve => {
-            for (let i = 0; i < geometries.length; i++) {
-                    let mat = new THREE.MeshBasicMaterial({color: colors[1][geometries[i].colorId]})
-                    mat.skinning = true
-                    let mesh = new THREE.SkinnedMesh(geometries[i], mat)
+            for (let i = 0; i < object[0].length; i++) {
+                let mat = null;
+                if(object.length > 1) {
+                    console.log(object[1])
+                    mat =  new THREE.MeshBasicMaterial({color: object[1][i][0].color})
+                } else {
+                    mat = new THREE.MeshBasicMaterial({color: colors[1][object[0][i].colorId]})
+                }
                    
+                    mat.skinning = true
+                    let mesh = new THREE.SkinnedMesh(object[0][i], mat)
+                //    mesh.rotation.x = Math.PI/2
+                //    mesh.scale.set(0.5,0.5,0.5)
+                   console.log(mesh)
                     this.mesh.add(mesh)  
                 
                 
-                if(i+1 == geometries.length) {
+                if(i+1 == object[0].length) {
                     resolve(this.mesh)
                 }
             }
@@ -95,7 +91,7 @@ class customizeChar {
 
 
                 if(i+1 == character.children.length) {
-                    this.character.material = new THREE.MeshFaceMaterial([character.children[0].material, character.children[1].material, character.children[2].material,character.children[3].material,character.children[4].material,character.children[5].material,character.children[6].material,character.children[7].material,character.children[8].material,character.children[9].material, character.children[10].material,character.children[11].material,character.children[12].material])                    
+                    this.character.material = new THREE.MeshFaceMaterial([character.children[0].material, character.children[1].material, character.children[2].material])                    
                     resolve(this.character)
                 }
             }

@@ -11,20 +11,31 @@ class loadingManager {
         let typeArray = type
         let loaded = false;
         let count = 0;
-        let objects = [];
+        let geometries = [];
+        let materials = []
+        let object = []
         return new Promise (resolve => {
           
             for(let i = 0; i < pathsArray.length; i++) {
 
-                this.loader.load(pathsArray[i], (object)=>{
+                this.loader.load(pathsArray[i], (geometry, material)=>{
                     count ++
-                    object.colorId = colorIdArray[i]
-                    object.type = typeArray[i]
-                    objects.push(object)
+                    geometry.colorId = colorIdArray[i]
+                    geometry.type = typeArray[i]
+                    geometries.push(geometry)
+                    if(material) {
+                        materials.push(material)
+                    }  
                     
                     if(count == pathsArray.length) {
                         loaded = true;
-                        resolve(objects)
+                        if (material) {
+                            object.push(geometries, materials)
+                            resolve((object))
+                          } else {
+                              object.push(geometries)
+                            resolve(object)
+                          }
                     }
                 })
     

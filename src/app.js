@@ -9,6 +9,7 @@ class App {
         
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.001, 10000)
         this.camera.position.z = 5;
+        // this.camera.position.y = 5;
         this.scene = new THREE.Scene()
 
         let mat = new THREE.MeshBasicMaterial({color: "white"})
@@ -25,8 +26,9 @@ class App {
                 
                 this.character = group.clone()
                 this.character.name ="char"
-
-               
+                
+                this.character.rotation.x = Math.PI/2
+                this.character.scale.set(0.5,0.5,0.5)
                 this.scene.add(this.character)
                 console.log(this.scene)
             
@@ -88,7 +90,8 @@ class App {
         .then(character2 => {
             this.characterDef = character2            
             this.characterDef.mixer = new THREE.AnimationMixer(this.characterDef)
-            this.characterDef.geometry.dynamic = true;
+            console.log(this.characterDef)
+            // this.characterDef.geometry.dynamic = true;
             this.characterDef.geometry.verticesNeedUpdate = true;
             this.characterDef.geometry.elementsNeedUpdate = true;
             this.characterDef.geometry.morphTargetsNeedUpdate = true;
@@ -97,6 +100,13 @@ class App {
             this.characterDef.geometry.colorsNeedUpdate = true;
             this.characterDef.geometry.tangentsNeedUpdate = true;
             this.characterDef.geometry.groupsNeedUpdate = true;
+            this.characterDef.rotation.x = Math.PI/2
+            this.characterDef.scale.set(0.5,0.5,0.5)
+            for (let i = 0; i < this.characterDef.skeleton.bones.length; i++) {
+                let mesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 'black'}))
+                mesh.scale.set(0.2,0.2,0.2)
+                this.characterDef.skeleton.bones[i].add(mesh)
+            }   
 
             this.walkAction = this.characterDef.mixer.clipAction(this.characterDef.geometry.animations[0]);
             this.walkAction.enabled = true

@@ -1,40 +1,132 @@
 import * as THREE from 'three'
 import customizeChar from './components/customizeChar'
 import loadingManager from './utils/loadingManager'
+import GLTFLoader from './utils/glTFLoader'
 import charOrga from './assets/charOrga'
 import colors from './assets/colors'
+var fbx = require('three-fbx-loader')
 
 class App {
     constructor() {
         
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.001, 10000)
-        this.camera.position.z = 5;
+        this.camera.position.z = 1000;
         // this.camera.position.y = 5;
         this.scene = new THREE.Scene()
-
+        this.actions = []
         let mat = new THREE.MeshBasicMaterial({color: "white"})
         let geo = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
         this.mixer = null;
         this.loadingManager = new loadingManager()
 
         this.customizeChar = new customizeChar()
-
-        this.customizeChar.loadCharacter()
-        .then( geometries=>{
-            this.customizeChar.createMeshGroup(geometries)
-            .then(group => {
-                
-                this.character = group.clone()
-                this.character.name ="char"
-                
-                this.character.rotation.x = Math.PI/2
-                this.character.scale.set(0.5,0.5,0.5)
-                this.scene.add(this.character)
-                console.log(this.scene)
+        this.fbxLoader = new fbx()
+        this.mainChar = true
+        this.bodyParts = {
             
-            })
-        })
+            csqe: [],
+            tete: [],
+            crps: [],
+            bras: [],
+            jmbe: [],
+        }
+       
+        this.selected = null
+        
+        let light = new THREE.HemisphereLight( 0x00000, 0x00000     );
+        light.position.set( 0, 50, 30 );
+        this.scene.add( light );
 
+        light = new THREE.DirectionalLight( 0x00000 );
+        light.position.set( 0, 50, 30 );
+        this.scene.add( light )
+        console.log(GLTFLoader)
+        this.loader = new GLTFLoader()
+        this.loader.setCrossOrigin = "anonymous"
+
+            this.loader.load( './src/assets/rig-heros.glb',  ( gltf ) => {
+                gltf.scene.traverse((child)=> {
+            if(child.scale.x == 100) {
+            }
+            if (child.isMesh) {
+    
+              if(this.morphTargets) {
+                  let color = child.material.color
+                  let opacity = child.material.opacity
+                  child.material.color = color
+                  if(this.hide) {
+                    child.material.opacity = 0
+                  } else {
+                    child.material.opacity = opacity
+                  }
+    
+                  child.material.realOpacity = opacity
+                  child.material.transparent = true
+                  child.material.depthTest = false
+                  child.material.depthWrite = false
+                  child.material.morphTargets = true
+              } else {
+                if(child.name == "Curve003") {
+                  child['visible'] == null
+                  child.children[0].children[0].visible = false
+                  
+                }
+          
+                if(child['material']) {
+                  let mat = new THREE.MeshBasicMaterial()
+                  let color = child.material.color
+                  let opacity = child.material.opacity
+                  child.material = mat
+                  child.material.color = color
+                  if(this.hide) {
+                    child.material.opacity = 0
+                  } else {
+                    child.material.opacity = opacity
+                  }
+                  
+                  child.material.realOpacity = opacity
+                  child.material.transparent = true
+                  child.material.depthTest = false
+                  child.material.depthWrite = false
+
+                  child.name = child.parent.parent.name.replace('-', '').slice(0,5)
+                  this.bodyParts[child.name.slice(0,4)].push(child)
+                  
+                  if(this.mainChar) {
+                    var matches = child.name.match(/\d+/g);
+                    if (matches[0] != 2) {
+                      child.visible = false
+                    }
+                  }
+                 
+                }
+              }
+            }
+          })
+    
+    
+          this.character = new THREE.Group()
+          this.character.name = this.name;
+          this.character.add(gltf.scene)
+          this.character.rotation.x = Math.PI/2
+          this.character.scale.set(4,4,4)
+          this.scene.add(this.character)
+                if ( this.character === undefined ) {
+                    alert( 'Unable to find a SkinnedMesh in this place:\n\n' + url + '\n\n' );
+                    return;
+          }
+
+          this.mixer = new THREE.AnimationMixer( gltf.scene );
+          for(let i=0; i< gltf.animations.length; i++) {
+            
+            this.actions.push(this.mixer.clipAction(gltf.animations[i]))
+          }
+                this.actions[5].play()
+        });
+
+        this.ambiant = new THREE.AmbientLight(0x000000)
+        this.scene.add(this.ambiant)
+        
     
         this.renderer = new THREE.WebGLRenderer({antialias: true})
         this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -42,83 +134,56 @@ class App {
         document.body.appendChild( this.renderer.domElement );
         
         this.render()
-        document.getElementById('changeHead').addEventListener('click', this.changeHead.bind(this))
-        document.getElementById('validate').addEventListener('click', this.createChar.bind(this))
+
         
         this.generateUI()
     }
 
     generateUI() {
-        // this.customizeContainer = document.createElement('div')
-        // this.customizeContainer.classList.add('customizeContainer')
-
-        // this.customizeContainer.innerHTML = `
-        //     <div class="hello"> je ne sais pas </div>
-        // `
-        // this.body = document.getElementsByTagName('body')
-
-        // this.body[0].appendChild(this.customizeContainer)
+      this.categories = document.querySelectorAll('.categoryItem')
+        
+      for (let i = 0; i < this.categories.length; i++) {
+          const element = this.categories[i];
+          console.log(element)
+          element.addEventListener('click', this.displayItems.bind(this, element.id))
+          
+      }
     }
 
+    displayItems(currentType) {
+        this.armorChoiceContainer = document.querySelector('.armorChoice')
+        console.log(currentType)
+        this.armorChoiceContainer.innerHTML = ''
+        for (let i = 0; i < 4; i++) {
+            let btn = document.createElement("BUTTON");
+            btn.id = currentType+(i+1)
+            btn.innerHTML = btn.id
+            btn.classList.add('armorItem')
+            
+            btn.addEventListener('click', this.changeElement.bind(this, btn.id))
+            
+           this.armorChoiceContainer.appendChild(btn)
+            
+        }
+    }
 
-    changeHead() {
+    changeElement(selectedElement) {
+     
         if(this.character) {
-            for (let i = 0; i < this.character.children.length; i++) {
-                let bodyPart = this.character.children[i]
-             
-                if(bodyPart.geometry.type == "casque") {
-                    console.log('ok')
-                    this.character.remove(bodyPart)
-                   this.loadingManager.loadMesh(charOrga.casque[1].object, "casque")
-                   .then(object => {
-                       console.log(object)
-                       let mat = new THREE.MeshBasicMaterial({color: colors[1][object[0].colorId]})
-                       mat.skinning = true
-                       let mesh = new THREE.SkinnedMesh(object[0], mat)
-                       mesh.name = "testCasque"
-                       this.character.add(mesh)
-                   })
-                }
-            }
+           for (let i = 0; i < this.bodyParts[selectedElement.slice(0,4)].length; i++) {
+               let element = this.bodyParts[selectedElement.slice(0,4)][i]
+               element.visible = false
+               console.log(selectedElement)
+               if(element.name == selectedElement) {
+                   element.visible = true
+               }
+               
+           }
         }
     
     }
 
-    createChar() {
-        let charClone = this.character.clone()
-        this.customizeChar.createCharacter(charClone)
-        .then(character2 => {
-            this.characterDef = character2            
-            this.characterDef.mixer = new THREE.AnimationMixer(this.characterDef)
-            console.log(this.characterDef)
-            // this.characterDef.geometry.dynamic = true;
-            this.characterDef.geometry.verticesNeedUpdate = true;
-            this.characterDef.geometry.elementsNeedUpdate = true;
-            this.characterDef.geometry.morphTargetsNeedUpdate = true;
-            this.characterDef.geometry.uvsNeedUpdate = true;
-            this.characterDef.geometry.normalsNeedUpdate = true;
-            this.characterDef.geometry.colorsNeedUpdate = true;
-            this.characterDef.geometry.tangentsNeedUpdate = true;
-            this.characterDef.geometry.groupsNeedUpdate = true;
-            this.characterDef.rotation.x = Math.PI/2
-            this.characterDef.scale.set(0.5,0.5,0.5)
-            for (let i = 0; i < this.characterDef.skeleton.bones.length; i++) {
-                let mesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 'black'}))
-                mesh.scale.set(0.2,0.2,0.2)
-                this.characterDef.skeleton.bones[i].add(mesh)
-            }   
-
-            this.walkAction = this.characterDef.mixer.clipAction(this.characterDef.geometry.animations[0]);
-            this.walkAction.enabled = true
-
-            this.walkAction.play()
-            console.log(this.characterDef, this.character)
-            this.scene.add(this.characterDef)
-            this.scene.remove(this.character)
-            
-        })
-    }
-
+   
   
 
     render() {
@@ -130,7 +195,13 @@ class App {
                     this.characterDef.mixer.update( 15/1000 );
           
         }
-        
+
+        if ( this.mixer ) {
+
+            var time = Date.now();
+
+            this.mixer.update(17/1000 );
+        }
     }
 }
 
